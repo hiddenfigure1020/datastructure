@@ -1,7 +1,12 @@
 #include <iostream>
-using namespace std;
 
 const int TABLE_SIZE = 7;
+
+class Iterator;
+class HashMapIterator;
+class HashMap;
+class HashEntry;
+class ManualHashMap;
 
 class HashEntry
 {
@@ -24,7 +29,7 @@ public:
 
 	void print() const
 	{
-		cout << "\nKey: " << key << " value: " << value;
+		std::cout << "\nKey: " << key << " value: " << value;
 	}
 
 	int getKey() const
@@ -39,7 +44,23 @@ public:
 
 };
 
-class HashMap
+class Iterator
+{
+public:
+	virtual void  first() = 0;
+	virtual void  next() = 0;
+	virtual bool isDone() = 0;
+	virtual HashEntry * currentItem() = 0;
+};
+
+
+class Iterable
+{
+public:
+	virtual Iterator * getIterator() = 0;
+};
+
+class HashMap : public Iterable
 {
 private:
 	HashEntry **table;
@@ -47,16 +68,14 @@ private:
 	int size;
 
 public:
-	HashMap() :
-
+	HashMap(const int & _size) :
+		size(_size),
 		current_size(0)
 	{
-		table = new HashEntry*[TABLE_SIZE];
-		for (int i = 0; i < TABLE_SIZE; i++)
+		table = new HashEntry*[size];
+		for (int i = 0; i < size; i++)
 			table[i] = NULL;
 	}
-
-
 
 	~HashMap()
 	{
@@ -68,6 +87,9 @@ public:
 
 public:
 
+	friend class HashMapIterator;
+
+	Iterator* getIterator();
 
 	bool isFull()
 	{
@@ -88,12 +110,14 @@ public:
 		if (table[hash] == NULL)
 		{
 			table[hash] = new HashEntry(keyvalue, keyvalue);
-			cout << "\nInsert value: " << keyvalue;
+			std::cout << "\nInsert value: " << keyvalue;
 		}
 		else
 			return;
 
 		current_size++;
+		std::cout << "\nCurrent size: " << current_size;
+		std::cout << "\nTotal size: " << size;
 	}
 
 	int get(int key)
@@ -116,17 +140,12 @@ public:
 		int val = get(value);
 
 		if (val == value)
-			cout << "\nFound value: " << value << endl;
+			std::cout << "\nFound value: " << value;
 		else
-			cout << "\ncant find" << value << endl;
+			std::cout << "\ncant find" << value;
 	}
 
-	void display()
-	{
-		for (int i = 0; i < size; i++)
-			if (table[i] != NULL)
-				table[i]->print();
-	}
+
 
 private:
 
@@ -142,7 +161,7 @@ private:
 
 	void rehash()
 	{
-		cout << "\nRehash";
+		std::cout << "\nRehash";
 
 		HashEntry ** temp = table;
 		int temp_size = size;
@@ -185,12 +204,92 @@ private:
 
 		return n;
 	}
+};
+
+class HashMapIterator : public Iterator
+{
+private:
+	 HashMap * hash_map;
+	int index;
+public:
+	HashMapIterator(HashMap * _hash_map) :
+		hash_map(_hash_map),
+		index(0)
+	{
+
+	}
+public:
+	friend class HashMap;
+
+	void first()
+	{
+		for (int i = 0; i < hash_map->size; ++i)
+		{
+			if (NULL != hash_map->table[i])
+			{
+				index = i;
+				return;
+			}
+		}
+	}
+	void next()
+	{
+		for (int i = index + 1; i < hash_map->size; ++i)
+		{
+			if (NULL != hash_map->table[i])
+			{
+				index = i;
+				return;
+			}
+		}
+	}
+
+	bool isDone()
+	{
+		return index > hash_map->size;
+	}
+
+	HashEntry * currentItem()
+	{
+		return hash_map->table[index];
+	}
 
 };
 
+
+Iterator* HashMap::getIterator()
+{
+	return new HashMapIterator(this);
+}
+
+class ManualHashMap
+{
+private:
+	Iterator * interator;
+public:
+	ManualHashMap(Iterator *  _interator) :
+		interator(_interator)
+	{
+
+	}
+
+public:
+	void display()
+	{
+		interator->first();
+		if (!interator->isDone())
+		{
+			HashEntry * entry = interator->currentItem();
+			entry->print();
+			interator->next();
+		}
+	}
+};
+
+
 int main()
 {
-	HashMap * hash_map = new HashMap();
+	HashMap * hash_map = new HashMap(TABLE_SIZE);
 
 
 	hash_map->insert(121);
@@ -205,10 +304,10 @@ int main()
 	hash_map->insert(36);
 	hash_map->insert(64);
 	hash_map->insert(49);
-
-	hash_map->display();
-
 	hash_map->find(134);
+
+	ManualHashMap * manual_hashmap = new ManualHashMap(hash_map->getIterator());
+	manual_hashmap->display();
 
 	//rehash
 	delete hash_map;
