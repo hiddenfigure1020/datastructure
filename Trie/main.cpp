@@ -5,6 +5,7 @@
 #include <stack>
 #include <fstream>
 #include <list>
+#include <ctime>
 
 //This Trie allow all char >= 32 && <= 94 depend on ASCII
 #define CHAR_SIZE				94
@@ -13,6 +14,7 @@
 
 #define BACK_SPACE_KEY			8
 #define ENTER_KEY				13
+#define WAITTING_INPUT_TIME		3.0
 
 using namespace std;
 
@@ -257,35 +259,67 @@ public:
 		}
 	}
 
+	static void Input(string & val)
+	{
+		double elapsed_secs = 0;
+		clock_t begin = clock();
+		while (elapsed_secs < WAITTING_INPUT_TIME)
+		{
+
+			if (_kbhit())
+			{
+				int x = _getch();
+
+				if (BACK_SPACE_KEY == x)
+				{
+					val = HelperFunction::RemoveLast(val);
+				}
+				else
+					if (ENTER_KEY == x)
+					{
+						throw exception();
+					}
+					else
+						val.push_back((char)x);
+			}
+
+			clock_t end = clock();
+			elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+		}
+		
+	}
 
 	void Search()
 	{
 		string value;
 		list<string> valid_words = list<string>();
 
+		string old_vale;
+
+		cout << "\nPlease type search queries: " << value;
+
 		while (true)
 		{
 			valid_words.clear();
-			cout << "\nPlease type search queries: " << value;
-			int x = _getch();
-
-			if (BACK_SPACE_KEY == x)
+			old_vale = value;
+			try
 			{
-				value = HelperFunction::RemoveLast(value);
+				Input(value);
 			}
-			else
-				if (ENTER_KEY == x)
-				{
-					break;
-				}
-				else
-					value.push_back((char)x);
+			catch (...)
+			{
+				break;
+			}
+			
+			if (old_vale == value)
+				continue;
 
 			Node * node = Search(value);
 
 			if (NULL == node)
 			{
 				cout << "\n" << value << " not found!";
+				cout << "\nPlease type search queries: " << value;
 				continue;
 			}
 			else
@@ -297,6 +331,7 @@ public:
 			{
 				cout << "\n" << *ci;
 			}
+			cout << "\nPlease type search queries: " << value;
 		}
 
 		Node* node = Search(value);
@@ -407,7 +442,6 @@ public:
 
 int main()
 {
-
 	Trie * trie = new Trie();
 
 	FileReader file_reader = FileReader(SOURCE_NAME);
@@ -421,7 +455,7 @@ int main()
 	//trie->Display(trie->GetRoot());
 
 	trie->Search();
-
+	
 	return 0;
 }
 
