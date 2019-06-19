@@ -86,6 +86,18 @@ public:
 		result = result.erase(result.length() - 1, 1);
 		return result;
 	}
+
+	static list<string> GetSubString(const string & str, const int & length)
+	{
+		list<string> result = list<string>();
+
+		for (int i = 0; i + length <= str.length(); ++i)
+		{
+			string sub_str = str.substr(0, length);
+			result.push_back(sub_str);
+		}
+		return result;
+	}
 };
 
 class Trie
@@ -211,6 +223,8 @@ public:
 			if (NULL == node)
 			{
 				cout << "\n" << value << " not found!";
+				cout << "\nDo you mean:";
+				Recommendation(value);
 				continue;
 			}
 			else
@@ -223,66 +237,41 @@ public:
 				cout << "\n" << *ci;
 			}
 		}
-
-		Node* node = Search(value);
-		if (NULL == node)
-		{
-			cout << "\nDo you mean:";
-			for (int i = 0; i < value.length() - 1; ++i)
-			{
-				char first = value[i];
-				char second = value[i + 1];
-				RecommendationSearch(root, first, second, value);
-			}
-		}
-		else
-		{
-			cout << "\nYour options are:";
-			GetValidWords(node, valid_words, value);
-			for (list<string>::const_iterator ci = valid_words.begin(); ci != valid_words.end(); ++ci)
-			{
-				cout << "\n" << *ci;
-			}
-		}
 	}
 
-
-	void RecommendationSearch(Node * root_node, const char & first, const char & second, string val)
+	void Recommendation(string val)
 	{
-		//check if the word contain first and second
+		list<string> valid_words = list<string>();
+		GetValidWords(root, valid_words);
+		list<string> similar_words = list<string>();
+
+		for (int i = val.length(); i > 1; --i)
 		{
-			Node * first_node = root_node->GetChild(GetAlphabetIndex(first));
-			if (NULL != first_node)
+			list<string> sub_strs = HelperFunction::GetSubString(val, i);
+			
+			for (list<string>::const_iterator valid_word = valid_words.begin(); 
+				valid_word != valid_words.end(); ++valid_word)
 			{
-				Node * second_node = first_node->GetChild(GetAlphabetIndex(second));
-				if (NULL != second)
+
+				for (list<string>::const_iterator sub_str = sub_strs.begin();
+					sub_str != sub_strs.end(); ++sub_str)
 				{
-					list<string> valid_words = list<string>();
-					string temp_val = val;
-					temp_val.push_back(first);
-					temp_val.push_back(second);
-					GetValidWords(second_node, valid_words, temp_val);
-
-					for (list<string>::const_iterator ci = valid_words.begin(); ci != valid_words.end(); ++ci)
+					
+					if ((*valid_word).find(*sub_str, (*sub_str).length()) != string::npos)
 					{
-						cout << "\n" << *ci;
+						similar_words.push_back(*valid_word);
+						break;
 					}
-
-					return;
 				}
-
+				if (similar_words.size() == 3)
+					break;
 			}
 		}
 
-		for (int i = 0; i < CHAR_SIZE; ++i)
+		for (list<string>::const_iterator word = similar_words.begin();
+			word != similar_words.end(); ++word)
 		{
-			Node * node = root_node->GetChild(i);
-			if (NULL != node)
-			{
-				val.push_back(i + FIRST_CHAR);
-				RecommendationSearch(node, first, second, val);
-				HelperFunction::RemoveLast(val);
-			}
+			cout << "\n" << *word;
 		}
 	}
 
