@@ -76,17 +76,6 @@ public:
 				num++;
 		return num;
 	}
-
-	void RemoveChild(Node * child)
-	{
-		for (int i = 0; i < CHAR_SIZE; ++i)
-			if (child == children[i])
-			{
-				children[i] = NULL;
-				return;
-			}
-	}
-
 };
 
 class ITrie
@@ -94,7 +83,6 @@ class ITrie
 public:
 	virtual  void Insert(const string & key) = 0;
 	virtual Node* Search(const string & key) = 0;
-	virtual void Delete(const string & key) = 0;
 	virtual void GetValidWords(Node * root_node, list<string> & result, string str) = 0;
 };
 
@@ -191,52 +179,6 @@ public:
 		}
 
 		return crawl;
-	}
-
-	void Delete(const string & key)
-	{
-		Node * crawl = root;
-
-		stack<Node*> nodes = stack<Node*>();
-
-		for (int i = 0; i < key.size(); ++i)
-		{
-			int key_index = GetAlphabetIndex(key[i]); //get index in alphabet
-
-			Node * child = crawl->GetChild(key_index);
-
-			if (NULL == child)
-			{
-				return; //can not found this word to delete
-			}
-			nodes.push(child);
-			crawl = child;
-		}
-
-		if (true == crawl->IsEndOfWord() && NULL != crawl)
-		{
-			Node * mark = NULL;
-			Node * pre_mark = NULL;
-			while (!nodes.empty())
-			{
-				Node * temp = nodes.top();
-
-				if (((temp->IsEndOfWord() == true && temp->GetNumOfChildren() == 0) ||
-					(temp->IsEndOfWord() == false && temp->GetNumOfChildren() == 1)) && temp != root)
-				{
-					mark = temp;
-				}
-				else
-				{
-					pre_mark = temp;
-					break;
-				}
-				nodes.pop();
-			}
-
-			pre_mark->RemoveChild(mark);
-			delete mark;
-		}
 	}
 
 	void GetValidWords(Node * root_node, list<string> & result, string str = "")
@@ -398,16 +340,6 @@ public:
 
 };
 
-
-static void Search(Trie * trie, string key)
-{
-	Node * node = trie->Search(key);
-	if (node != NULL && node->IsEndOfWord())
-		cout << "\nFound " << key;
-	else
-		cout << "\nNot found " << key;
-}
-
 class FileReader
 {
 private:
@@ -451,8 +383,6 @@ int main()
 	{
 		trie->Insert(*ci);
 	}
-
-	//trie->Display(trie->GetRoot());
 
 	trie->Search();
 	
