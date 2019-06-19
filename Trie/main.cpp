@@ -1,11 +1,10 @@
 #include <iostream>
-#include<conio.h>
+#include <conio.h>
 #include <string>
 #include <stdlib.h>
 #include <stack>
 #include <fstream>
 #include <list>
-#include <ctime>
 
 //This Trie allow all char >= 32 && <= 94 depend on ASCII
 #define CHAR_SIZE				94
@@ -78,22 +77,6 @@ public:
 	}
 };
 
-class ITrie
-{
-public:
-	virtual  void Insert(const string & key) = 0;
-	virtual Node* Search(const string & key) = 0;
-	virtual void GetValidWords(Node * root_node, list<string> & result, string str) = 0;
-};
-
-class IHelper
-{
-public:
-	virtual void Search() = 0;
-	virtual void RecommendationSearch(Node * root_node, const char & first,
-		const char & second, string val) = 0;
-};
-
 class HelperFunction
 {
 public:
@@ -106,7 +89,7 @@ public:
 	}
 };
 
-class Trie : public ITrie, IHelper
+class Trie
 {
 private:
 	Node * root;
@@ -201,67 +184,34 @@ public:
 		}
 	}
 
-	static void Input(string & val)
-	{
-		double elapsed_secs = 0;
-		clock_t begin = clock();
-		while (elapsed_secs < WAITTING_INPUT_TIME)
-		{
-
-			if (_kbhit())
-			{
-				int x = _getch();
-
-				if (BACK_SPACE_KEY == x)
-				{
-					val = HelperFunction::RemoveLast(val);
-				}
-				else
-					if (ENTER_KEY == x)
-					{
-						throw exception();
-					}
-					else
-						val.push_back((char)x);
-			}
-
-			clock_t end = clock();
-			elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-		}
-		
-	}
-
 	void Search()
 	{
 		string value;
 		list<string> valid_words = list<string>();
 
-		string old_vale;
-
-		cout << "\nPlease type search queries: " << value;
-
 		while (true)
 		{
 			valid_words.clear();
-			old_vale = value;
-			try
+			cout << "\nPlease type search queries: " << value;
+			int x = _getch();
+
+			if (BACK_SPACE_KEY == x)
 			{
-				Input(value);
+				value = HelperFunction::RemoveLast(value);
 			}
-			catch (...)
-			{
-				break;
-			}
-			
-			if (old_vale == value)
-				continue;
+			else
+				if (ENTER_KEY == x)
+				{
+					break;
+				}
+				else
+					value.push_back((char)x);
 
 			Node * node = Search(value);
 
 			if (NULL == node)
 			{
 				cout << "\n" << value << " not found!";
-				cout << "\nPlease type search queries: " << value;
 				continue;
 			}
 			else
@@ -273,7 +223,6 @@ public:
 			{
 				cout << "\n" << *ci;
 			}
-			cout << "\nPlease type search queries: " << value;
 		}
 
 		Node* node = Search(value);
@@ -319,7 +268,7 @@ public:
 					{
 						cout << "\n" << *ci;
 					}
-					
+
 					return;
 				}
 
@@ -385,7 +334,7 @@ int main()
 	}
 
 	trie->Search();
-	
+
 	return 0;
 }
 
