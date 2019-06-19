@@ -232,9 +232,14 @@ public:
 				cout << "\nYour options are:";
 			}
 			GetValidWords(node, valid_words, value);
+			int MAX_SEARCH_DISPLAY = 0;
 			for (list<string>::const_iterator ci = valid_words.begin(); ci != valid_words.end(); ++ci)
 			{
+				MAX_SEARCH_DISPLAY++;
+
 				cout << "\n" << *ci;
+				if (5 == MAX_SEARCH_DISPLAY)
+					break;
 			}
 		}
 	}
@@ -248,15 +253,15 @@ public:
 		for (int i = val.length(); i > 1; --i)
 		{
 			list<string> sub_strs = HelperFunction::GetSubString(val, i);
-			
-			for (list<string>::const_iterator valid_word = valid_words.begin(); 
+
+			for (list<string>::const_iterator valid_word = valid_words.begin();
 				valid_word != valid_words.end(); ++valid_word)
 			{
 
 				for (list<string>::const_iterator sub_str = sub_strs.begin();
 					sub_str != sub_strs.end(); ++sub_str)
 				{
-					
+
 					if ((*valid_word).find(*sub_str, (*sub_str).length()) != string::npos)
 					{
 						similar_words.push_back(*valid_word);
